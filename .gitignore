@@ -1,0 +1,13 @@
+.venv/
+__pycache__/
+*.pyc
+*.egg-info/
+runs/
+generated/
+reports/
+*.ini
+.pytest_cache/
+.superpowers/
+MUJOCO_LOG.TXT
+docs/plans/
+/release-prep-report.md

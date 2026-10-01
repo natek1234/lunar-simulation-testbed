@@ -1,0 +1,68 @@
+# The default platform: a rover-scaled Neobotix MPO-700 swerve base carrying a x1.5
+# Franka FR3 arm and Franka hand. Units SI, frame B = base_link (x forward, z up).
+name: fr3_mpo700
+# The envelope's flange-LOAD limit (not the contact-force budget defined in
+# docs/reference/requirements.md, 58.6 N, 0.21 pull/weight at 344.63 kg lunar, SF 2):
+# that is a SEATING contact-force requirement / drawbar figure, and the flange F/T sensor
+# reads the carried payload's weight and inertial load too (22 kg = 35.6 N at lunar g
+# before any acceleration), so 58.6 N tripped the freeze during ordinary carrying and
+# back-off ratcheted the unit into the ground (DECISIONS.md D15). Derived the way the
+# hand variant's 125 N was (D12): the measured PEAK in motion carrying the 22 kg unit --
+# the carry window of the full single-placement run, 140.5 N at the 500 Hz physics-tick rate
+# (episode `ft_B`), envelope clamp neutralised (re-measured 138.4 N after D16's stance change,
+# so 210 N is 1.52x) -- times ~1.5. The one-tick 411 N magnet-
+# capture weld snap and the seating contact are contact events, not carry, and are excluded.
+# Consequence (D15): the testbed no longer enforces the 58.6 N contact-force budget for this robot.
+force_budget_n: 210.0     # [measured: single-placement in-motion carry peak 140.5 N (500 Hz ft_B, clamp neutralised) x 1.5, DECISIONS.md D15/D16, 2026-09-21]
+base:
+  kind: swerve
+  body: base_link                      # [ported: assets/mpo700/mpo_700.xml]
+  chassis_mjcf: assets/mpo700/mpo_700.xml
+  footprint_scale: 2.5                 # [authored-geometry: rover scale, 0.48 m -> 1.2 m wheelbase]
+  module_scale: 1.5                    # [authored-geometry: wheel 0.09 -> 0.135 m]
+  # Module xy = vendored caster positions (+-0.24, +-0.18) x footprint_scale; wheel radius
+  # = vendored sphere 0.09 x module_scale; lateral offset = vendored 0.045 x module_scale.
+  modules:
+    - {name: fl, xy_B_m: [0.6, 0.45],   steer_joint: mpo_700_caster_front_left_joint,  drive_joint: mpo_700_wheel_front_left_joint,  wheel_body: mpo_700_wheel_front_left_link,  wheel_radius_m: 0.135, lateral_offset_m: 0.0675}
+    - {name: fr, xy_B_m: [0.6, -0.45],  steer_joint: mpo_700_caster_front_right_joint, drive_joint: mpo_700_wheel_front_right_joint, wheel_body: mpo_700_wheel_front_right_link, wheel_radius_m: 0.135, lateral_offset_m: 0.0675}
+    - {name: bl, xy_B_m: [-0.6, 0.45],  steer_joint: mpo_700_caster_back_left_joint,   drive_joint: mpo_700_wheel_back_left_joint,   wheel_body: mpo_700_wheel_back_left_link,   wheel_radius_m: 0.135, lateral_offset_m: 0.0675}
+    - {name: br, xy_B_m: [-0.6, -0.45], steer_joint: mpo_700_caster_back_right_joint,  drive_joint: mpo_700_wheel_back_right_joint,  wheel_body: mpo_700_wheel_back_right_link,  wheel_radius_m: 0.135, lateral_offset_m: 0.0675}
+  steer_actuator_prefix: steer_
+  drive_actuator_prefix: drive_
+  steer_limit_rad: 1.6580628           # [ported: swerve-nav robot/mpo_700_swerve.xml ctrlrange, 95 deg]
+  steer_rate_max_radps: 6.5            # [ported: Neobotix MPO-700 URDF steer velocity limit via swerve-nav]
+  steer_kp: 1000.0                     # [ported: swerve-nav robot/mpo_700_swerve.xml]
+  steer_kv: 45.0                       # [ported: same]
+  drive_kv: 30.0                       # [ported: same]
+  max_vx_mps: 0.5                      # [policy default: teleop and scripted speed cap]
+  max_vy_mps: 0.5                      # [policy default]
+  max_wz_radps: 0.5                    # [policy default]
+  spawn_z_W_m: 0.115                   # [derived: wheel radius 0.135 - wheel centre z 0.04 + 0.02 drop margin]
+  suspension: null                     # not implemented yet
+arm:
+  mjcf: assets/franka_fr3/fr3.xml
+  scale: 1.5                           # [authored-geometry: 0.855 m -> 1.28 m reach, a lunar-construction-scale surrogate]
+  root_body: base                      # [ported: fr3.xml's root body under worldbody]
+  joints: [fr3_joint1, fr3_joint2, fr3_joint3, fr3_joint4, fr3_joint5, fr3_joint6, fr3_joint7]
+  actuators: [fr3_joint1, fr3_joint2, fr3_joint3, fr3_joint4, fr3_joint5, fr3_joint6, fr3_joint7]
+  home_q_rad: [0.0, 0.0, 0.0, -1.57079, 0.0, 1.57079, -0.7853]   # [ported: fr3.xml keyframe "home"]
+  flange_site: attachment_site         # [ported: fr3.xml]
+  mount_pos_B_m: [0.55, 0.0, 0.348]    # [measured: chassis mesh deck top via scripts/measure_deck.py]
+  mount_quat_wxyz: [1.0, 0.0, 0.0, 0.0]
+  attach_prefix: ""
+gripper:                               # DEFAULT end effector: the LRCS-style electromagnet
+  kind: magnet
+  mount_quat_wxyz: [1.0, 0.0, 0.0, 0.0]
+  interface_site: gripper_interface    # magnet face centre
+  interface_offset_m: [0.0, 0.0, 0.04] # [derived: = magnet height; face at the far end of the cylinder]
+  magnet:
+    radius_m: 0.08                     # [authored-geometry: covers the RCU's 0.25 m top face centre with margin]
+    height_m: 0.04                     # [authored-geometry]
+    mass_kg: 1.0                       # [ported: Vasudeva & Emami, "Lunar Robotic Construction System Using Raw Regolith: System Engineering," Aerospace 13(6):492, 2026, Table 12, electromagnet 1 kg]
+    capture_distance_m: 0.02           # [policy default]
+    capture_angle_rad: 0.35            # [policy default: 20 deg]
+    hold_force_n: 200.0                # [policy default: ~5.6 x an RCU's lunar weight; breakaway measured by tests/test_worksite.py]
+sensors:
+  ft_site: attachment_site
+  cameras: []                          # not implemented yet
+  tag_read_range_m: 2.0

@@ -1,0 +1,66 @@
+<mujoco model="mpo_700">
+  <compiler angle="radian" meshdir="meshes/" />
+
+  <option timestep="0.005" /><asset>
+    <mesh name="MPO-700-BODY" content_type="model/obj" file="MPO-700-BODY.obj" scale="0.001 0.001 0.001" />
+    <mesh name="MPO-700-HEAD" content_type="model/obj" file="MPO-700-HEAD.obj" scale="0.001 0.001 0.001" />
+    <mesh name="MPO-700-WHEEL" content_type="model/obj" file="MPO-700-WHEEL.obj" scale="0.001 0.001 0.001" />
+  </asset>
+
+  <worldbody>
+    <body name="base_link" pos="0 0 -0.01">
+      <freejoint name="base_free" /><inertial pos="0 0 0" mass="140" diaginertia="7.8 7.8 7.8" />
+      <geom pos="0 0 0" quat="0.707035 0 0 -0.707179" type="mesh" contype="0" conaffinity="0" group="1" density="0" mesh="MPO-700-BODY" />
+      <geom pos="0 0 0" quat="0.707035 0 0 -0.707179" type="mesh" mesh="MPO-700-BODY" group="3" />
+      <body name="base_footprint" />
+      <body name="mpo_700_caster_front_left_link" pos="0.24 0.18 0.22">
+        <inertial pos="0 0 0" mass="12.7" diaginertia="0.272581 0.272581 0.272581" />
+        <joint name="mpo_700_caster_front_left_joint" pos="0 0 0" axis="0 0 1" range="-1.7453292519943295 1.7453292519943295" actuatorfrcrange="-1000 1000" damping="2.0" armature="0.05" limited="true" />
+        <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" mesh="MPO-700-HEAD" />
+        <geom type="mesh" mesh="MPO-700-HEAD" group="3" />
+        <body name="mpo_700_wheel_front_left_link" pos="0 0.045 -0.12">
+          <inertial pos="0 0 0" mass="1.2" diaginertia="0.110421 0.110421 0.110421" />
+          <joint name="mpo_700_wheel_front_left_joint" pos="0 0 0" axis="0 -1 0" range="-1e+16 1e+16" actuatorfrcrange="-1000 1000" damping="0.1" armature="0.02" />
+          <geom quat="0.000796327 0 0 1" type="mesh" contype="0" conaffinity="0" group="1" density="0" mesh="MPO-700-WHEEL" />
+          <geom size="0.09" group="3" />
+        </body>
+      </body>
+      <body name="mpo_700_caster_front_right_link" pos="0.24 -0.18 0.22">
+        <inertial pos="0 0 0" mass="12.7" diaginertia="0.272581 0.272581 0.272581" />
+        <joint name="mpo_700_caster_front_right_joint" pos="0 0 0" axis="0 0 1" range="-1.7453292519943295 1.7453292519943295" actuatorfrcrange="-1000 1000" damping="2.0" armature="0.05" limited="true" />
+        <geom pos="0 0 0" quat="0.000796327 0 0 1" type="mesh" contype="0" conaffinity="0" group="1" density="0" mesh="MPO-700-HEAD" />
+        <geom pos="0 0 0" quat="0.000796327 0 0 1" type="mesh" mesh="MPO-700-HEAD" group="3" />
+        <body name="mpo_700_wheel_front_right_link" pos="0 -0.045 -0.12" quat="0.000796327 0 0 1">
+          <inertial pos="0 0 0" mass="1.2" diaginertia="0.110421 0.110421 0.110421" />
+          <joint name="mpo_700_wheel_front_right_joint" pos="0 0 0" axis="0 -1 0" range="-1e+16 1e+16" actuatorfrcrange="-1000 1000" damping="0.1" armature="0.02" />
+          <geom quat="0.000796327 0 0 1" type="mesh" contype="0" conaffinity="0" group="1" density="0" mesh="MPO-700-WHEEL" />
+          <geom size="0.09" group="3" />
+        </body>
+      </body>
+      <body name="mpo_700_caster_back_left_link" pos="-0.24 0.18 0.22">
+        <inertial pos="0 0 0" mass="12.7" diaginertia="0.272581 0.272581 0.272581" />
+        <joint name="mpo_700_caster_back_left_joint" pos="0 0 0" axis="0 0 1" range="-1.7453292519943295 1.7453292519943295" actuatorfrcrange="-1000 1000" damping="2.0" armature="0.05" limited="true" />
+        <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" mesh="MPO-700-HEAD" />
+        <geom type="mesh" mesh="MPO-700-HEAD" group="3" />
+        <body name="mpo_700_wheel_back_left_link" pos="0 0.045 -0.12">
+          <inertial pos="0 0 0" mass="1.2" diaginertia="0.110421 0.110421 0.110421" />
+          <joint name="mpo_700_wheel_back_left_joint" pos="0 0 0" axis="0 -1 0" range="-1e+16 1e+16" actuatorfrcrange="-1000 1000" damping="0.1" armature="0.02" />
+          <geom quat="0.000796327 0 0 1" type="mesh" contype="0" conaffinity="0" group="1" density="0" mesh="MPO-700-WHEEL" />
+          <geom size="0.09" group="3" />
+        </body>
+      </body>
+      <body name="mpo_700_caster_back_right_link" pos="-0.24 -0.18 0.22">
+        <inertial pos="0 0 0" mass="12.7" diaginertia="0.272581 0.272581 0.272581" />
+        <joint name="mpo_700_caster_back_right_joint" pos="0 0 0" axis="0 0 1" range="-1.7453292519943295 1.7453292519943295" actuatorfrcrange="-1000 1000" damping="2.0" armature="0.05" limited="true" />
+        <geom pos="0 0 0" quat="0.000796327 0 0 1" type="mesh" contype="0" conaffinity="0" group="1" density="0" mesh="MPO-700-HEAD" />
+        <geom pos="0 0 0" quat="0.000796327 0 0 1" type="mesh" mesh="MPO-700-HEAD" group="3" />
+        <body name="mpo_700_wheel_back_right_link" pos="0 -0.045 -0.12" quat="0.000796327 0 0 1">
+          <inertial pos="0 0 0" mass="1.2" diaginertia="0.110421 0.110421 0.110421" />
+          <joint name="mpo_700_wheel_back_right_joint" pos="0 0 0" axis="0 -1 0" range="-1e+16 1e+16" actuatorfrcrange="-1000 1000" damping="0.1" armature="0.02" />
+          <geom quat="0.000796327 0 0 1" type="mesh" contype="0" conaffinity="0" group="1" density="0" mesh="MPO-700-WHEEL" />
+          <geom size="0.09" group="3" />
+        </body>
+      </body>
+    <camera name="cam_front" pos="0.30 0 0.28" xyaxes="0 -1 0  0.208 0 0.978" fovy="58.0" /><camera name="cam_left" pos="0 0.25 0.28" xyaxes="1 0 0  0 0.208 0.978" fovy="58.0" /><camera name="cam_back" pos="-0.28 0 0.28" xyaxes="0 1 0  -0.208 0 0.978" fovy="58.0" /><camera name="cam_right" pos="0 -0.25 0.28" xyaxes="-1 0 0  0 -0.208 0.978" fovy="58.0" /></body>
+  </worldbody>
+<contact><exclude body1="base_link" body2="mpo_700_caster_front_left_link" /><exclude body1="base_link" body2="mpo_700_wheel_front_left_link" /><exclude body1="mpo_700_caster_front_left_link" body2="mpo_700_wheel_front_left_link" /><exclude body1="base_link" body2="mpo_700_caster_front_right_link" /><exclude body1="base_link" body2="mpo_700_wheel_front_right_link" /><exclude body1="mpo_700_caster_front_right_link" body2="mpo_700_wheel_front_right_link" /><exclude body1="base_link" body2="mpo_700_caster_back_left_link" /><exclude body1="base_link" body2="mpo_700_wheel_back_left_link" /><exclude body1="mpo_700_caster_back_left_link" body2="mpo_700_wheel_back_left_link" /><exclude body1="base_link" body2="mpo_700_caster_back_right_link" /><exclude body1="base_link" body2="mpo_700_wheel_back_right_link" /><exclude body1="mpo_700_caster_back_right_link" body2="mpo_700_wheel_back_right_link" /></contact></mujoco>

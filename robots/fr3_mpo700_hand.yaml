@@ -1,0 +1,96 @@
+# The alternate platform: a rover-scaled Neobotix MPO-700 swerve base carrying a x1.5
+# Franka FR3 arm and Franka hand. Units SI, frame B = base_link (x forward, z up).
+name: fr3_mpo700_hand
+# [measured: the envelope's own development probe, 2026-09-21 -- NOT the magnet's former 58.6 N figure (itself since re-derived, D15).
+# Closing the x1.5 hand's 64x-gain grip on the 22 kg RCU (D11's measured plateau) alone
+# transmits ~50 N of reaction back through the rigid hand/flange structure to the F/T
+# sensor at rest, and the D11 grip-and-lift gate's own 0.25 m / 4 s lift peaks at 83.6 N
+# transiently (settling to ~43.2 N) -- reusing the magnet's then-58.6 N contact-force budget
+# here made testbed.control.envelope.Envelope freeze on tick 1 of every grip (52 N > the
+# 41 N release threshold, i.e. never releases) and the frozen target's per-tick back-off
+# then fights the lift instead of the grip, sinking the RCU instead of lifting it
+# (test_hand_variant_grasps_the_unit_by_its_end regressed 0.211 m lift -> -0.83 m). The
+# hand's own steady grip-holding force is not a hazard the envelope should react to; a
+# genuine over-force event (e.g. ramming the payload into an obstacle) is. Set with a
+# ~1.5x margin over the measured PEAK transient (83.6 N), not the steady value, so
+# ordinary acceleration transients during a valid grasp never trip it: DECISIONS.md D12.
+force_budget_n: 125.0
+base:
+  kind: swerve
+  body: base_link                      # [ported: assets/mpo700/mpo_700.xml]
+  chassis_mjcf: assets/mpo700/mpo_700.xml
+  footprint_scale: 2.5                 # [authored-geometry: rover scale, 0.48 m -> 1.2 m wheelbase]
+  module_scale: 1.5                    # [authored-geometry: wheel 0.09 -> 0.135 m]
+  # Module xy = vendored caster positions (+-0.24, +-0.18) x footprint_scale; wheel radius
+  # = vendored sphere 0.09 x module_scale; lateral offset = vendored 0.045 x module_scale.
+  modules:
+    - {name: fl, xy_B_m: [0.6, 0.45],   steer_joint: mpo_700_caster_front_left_joint,  drive_joint: mpo_700_wheel_front_left_joint,  wheel_body: mpo_700_wheel_front_left_link,  wheel_radius_m: 0.135, lateral_offset_m: 0.0675}
+    - {name: fr, xy_B_m: [0.6, -0.45],  steer_joint: mpo_700_caster_front_right_joint, drive_joint: mpo_700_wheel_front_right_joint, wheel_body: mpo_700_wheel_front_right_link, wheel_radius_m: 0.135, lateral_offset_m: 0.0675}
+    - {name: bl, xy_B_m: [-0.6, 0.45],  steer_joint: mpo_700_caster_back_left_joint,   drive_joint: mpo_700_wheel_back_left_joint,   wheel_body: mpo_700_wheel_back_left_link,   wheel_radius_m: 0.135, lateral_offset_m: 0.0675}
+    - {name: br, xy_B_m: [-0.6, -0.45], steer_joint: mpo_700_caster_back_right_joint,  drive_joint: mpo_700_wheel_back_right_joint,  wheel_body: mpo_700_wheel_back_right_link,  wheel_radius_m: 0.135, lateral_offset_m: 0.0675}
+  steer_actuator_prefix: steer_
+  drive_actuator_prefix: drive_
+  steer_limit_rad: 1.6580628           # [ported: swerve-nav robot/mpo_700_swerve.xml ctrlrange, 95 deg]
+  steer_rate_max_radps: 6.5            # [ported: Neobotix MPO-700 URDF steer velocity limit via swerve-nav]
+  steer_kp: 1000.0                     # [ported: swerve-nav robot/mpo_700_swerve.xml]
+  steer_kv: 45.0                       # [ported: same]
+  drive_kv: 30.0                       # [ported: same]
+  max_vx_mps: 0.5                      # [policy default: teleop and scripted speed cap]
+  max_vy_mps: 0.5                      # [policy default]
+  max_wz_radps: 0.5                    # [policy default]
+  spawn_z_W_m: 0.115                   # [derived: wheel radius 0.135 - wheel centre z 0.04 + 0.02 drop margin]
+  suspension: null                     # not implemented yet
+arm:
+  mjcf: assets/franka_fr3/fr3.xml
+  scale: 1.5                           # [authored-geometry: 0.855 m -> 1.28 m reach, a lunar-construction-scale surrogate]
+  root_body: base                      # [ported: fr3.xml's root body under worldbody]
+  joints: [fr3_joint1, fr3_joint2, fr3_joint3, fr3_joint4, fr3_joint5, fr3_joint6, fr3_joint7]
+  actuators: [fr3_joint1, fr3_joint2, fr3_joint3, fr3_joint4, fr3_joint5, fr3_joint6, fr3_joint7]
+  home_q_rad: [0.0, 0.0, 0.0, -1.57079, 0.0, 1.57079, -0.7853]   # [ported: fr3.xml keyframe "home"]
+  flange_site: attachment_site         # [ported: fr3.xml]
+  mount_pos_B_m: [0.55, 0.0, 0.348]    # [measured: chassis mesh deck top via scripts/measure_deck.py]
+  mount_quat_wxyz: [1.0, 0.0, 0.0, 0.0]
+  attach_prefix: ""
+gripper:                               # ALTERNATE end effector: the vendored Franka parallel-jaw hand
+  kind: parallel
+  mjcf: assets/franka_hand/hand.xml
+  scale: 1.5
+  root_body: hand                      # [ported: hand.xml]
+  attach_prefix: hand_                 # materials 'white'/'black' collide with FR3's
+  mount_quat_wxyz: [0.9238795, 0.0, 0.0, -0.3826834]   # [ported: menagerie franka_emika_panda/panda.xml mounts the hand at Rz(-45 deg)]
+  actuator: hand_actuator8
+  cmd_open: 255.0                      # [ported: hand.xml ctrlrange 0..255 = 0..0.04 m per finger]
+  cmd_close: 0.0
+  finger_joints: [hand_finger_joint1, hand_finger_joint2]
+  interface_site: gripper_interface
+  interface_offset_m: [0.0, 0.0, 0.16] # [derived: hand root to fingertip pad centre, 0.1034 m vendored x 1.5]
+  # [authored-drivability: force/servo surrogate scaling, same design stance as the
+  # geometric scale factors above (arm.scale 1.5, base.footprint_scale 2.5,
+  # module_scale 1.5) -- this whole platform is a rover-scaled construction-mission
+  # SURROGATE, not a literal claim about vendored hardware, and the gripper's actuator
+  # is scaled the same way its geometry already is. The vendored `hand.xml` ships a real
+  # Franka hand sized for near-Earth, few-kilogram payloads: its own tendon actuator
+  # (`hand_actuator8`) has `forcerange=[-100, 100]` N [confirmed: read directly off
+  # assets/franka_hand/hand.xml via MjSpec, 2026-09-21] -- nowhere near enough to grip a
+  # 22 kg RCU (docs/reference/requirements.md, RCU geometry and mass) through a
+  # x1.5-scaled hand's larger, more slippery pads.
+  # 64x pushes that to +-6400 N: a fictional lunar-strength gripper actuator, exactly as
+  # `arm.scale`/`footprint_scale` already stand in for a fictional lunar-strength arm and
+  # chassis rather than the vendored FR3/MPO-700's literal dimensions. This is a design
+  # CHOICE, not a still-tuning placeholder -- see DECISIONS.md D11's addendum.]
+  #
+  # Swept 4/8/16/24/32/48/64/96/128 against a real 22 kg RCU seated between the pads
+  # (tests/test_worksite.py::test_hand_variant_grasps_the_unit_by_its_end, lift = rcu_0's
+  # measured z gain over a 0.25 m ee move, 4 s): 4.0 SLIPS OUT of the gripper entirely
+  # (net lift -0.177 m -- it falls further than it started); 8/16 grip but slip inside the
+  # fingers eats most of the margin (0.185 m / 0.205 m); the squeeze-force/lift curve
+  # PLATEAUS from 64 (0.2110 m) through 128 (0.2111 m) -- i.e. slip is fully arrested by
+  # 64x and the remaining ~0.039 m shortfall against the commanded 0.25 m is the IK's own
+  # 4 s convergence, not grip, the same gap the magnet gripper shows on the identical move
+  # (0.2248 m). 64.0 is the smallest value ON the plateau, not the largest that merely
+  # passes. [measured: tests/test_worksite.py hand gate, 2026-09-20]
+  gain_override: 64.0
+sensors:
+  ft_site: attachment_site
+  cameras: []                          # not implemented yet
+  tag_read_range_m: 2.0

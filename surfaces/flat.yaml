@@ -1,0 +1,5 @@
+kind: flat
+gravity_mps2: 1.62        # [ported: lunar surface gravity]
+friction: [1.0, 0.005, 0.0001]   # [policy default: MuJoCo defaults; no lunar-realism claim]
+texture: assets/textures/moon_01_diff_1k.png
+extent_m: 25.0            # [policy default]

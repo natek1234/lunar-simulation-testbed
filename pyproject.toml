@@ -1,0 +1,22 @@
+[project]
+name = "lunar-simulation-testbed"
+version = "0.1.0"
+description = "Physics-based (MuJoCo) lunar construction testbed: swappable mobile manipulators, RC or policy control, RCU placement benchmarks"
+requires-python = ">=3.11"
+license = { file = "LICENSE" }
+dependencies = ["mujoco>=3.11,<4", "numpy>=1.26", "pyyaml>=6.0", "glfw>=2.7"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["testbed*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-m 'not viewer'"
+markers = ["viewer: opens a real GLFW window (run with: pytest -m viewer)"]
